@@ -35,7 +35,8 @@ func Router() *gin.Engine {
 	api := r.Group("/api")
 	api.POST("/account", ctrl.accountCreate)
 	api.GET("/account/:id", ctrl.accountGet)
-	api.PUT("/account/:id", ctrl.accountUpdate)
+	api.POST("/account/:id/block", ctrl.accountBlocked)
+	api.POST("/account/:id/pay", ctrl.accountPay)
 	api.DELETE("/account/:id", ctrl.accountDelete)
 
 	return r

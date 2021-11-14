@@ -24,6 +24,16 @@ func UpdateAccount(r repository.Account, f *domain.Account) error {
 	return r.Update(f)
 }
 
+// UpdateAccountBlocked blocked money in account
+func UpdateAccountBlocked(r repository.Account, f *domain.Account) error {
+	return r.UpdateAccountBlocked(f)
+}
+
+// UpdateAccountPay pay and unblock money in account
+func UpdateAccountPay(r repository.Account, f *domain.Account) error {
+	return r.UpdateAccountPay(f)
+}
+
 // DeleteAccount delete account by id
 func DeleteAccount(r repository.Account, f *domain.Account) error {
 	return r.Delete(f)

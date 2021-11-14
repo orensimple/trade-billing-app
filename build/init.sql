@@ -21,3 +21,13 @@ create table accounts
 alter table accounts
     add primary key (id);
 
+ALTER TABLE billing.accounts
+    ADD CONSTRAINT `blocked_amount_value` CHECK (accounts.blocked_amount <= accounts.balance);
+
+ALTER TABLE billing.accounts
+    ADD CONSTRAINT `blocked_amount_zero` CHECK (accounts.blocked_amount >= 0);
+
+ALTER TABLE billing.accounts
+    ADD CONSTRAINT `balance_zero` CHECK (accounts.balance >= 0);
+
+INSERT INTO billing.accounts (id, currency_code, tariff, name, balance, blocked_amount, created_at, updated_at, deleted_at) VALUES ('d84db1a4-4f6c-4871-9ffa-1b3564c44111', 'RU', null, 'Main', 1000.00, 0.00, '2021-11-04 13:04:37', null, null);

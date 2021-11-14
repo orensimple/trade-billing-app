@@ -61,7 +61,7 @@ func (ctrl Controller) accountGet(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func (ctrl Controller) accountUpdate(c *gin.Context) {
+func (ctrl Controller) accountBlocked(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		log.Error(err)
@@ -94,15 +94,71 @@ func (ctrl Controller) accountUpdate(c *gin.Context) {
 
 	account.BlockedAmount = req.BlockedAmount
 
-	err = usecase.UpdateAccount(ctrl.AccountRepository, account)
+	err = usecase.UpdateAccountBlocked(ctrl.AccountRepository, account)
 	if err != nil {
 		log.Error(err)
-		c.JSON(http.StatusInternalServerError, domain.SimpleResponse{Status: "failed delete account"})
+
+		if err.Error() == "Error 3819: Check constraint 'blocked_amount_value' is violated." {
+			c.JSON(http.StatusConflict, domain.SimpleResponse{Status: "haven't money"})
+
+			return
+		}
+		c.JSON(http.StatusInternalServerError, domain.SimpleResponse{Status: "failed blocked money"})
 
 		return
 	}
 
-	c.JSON(http.StatusOK, account)
+	c.JSON(http.StatusOK, domain.SimpleResponse{Status: "OK"})
+}
+
+func (ctrl Controller) accountPay(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "wrong id"})
+
+		return
+	}
+
+	account, err := usecase.GetAccount(ctrl.AccountRepository, &domain.Account{ID: id})
+	if err != nil && err.Error() != "account not found" {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "failed get account"})
+
+		return
+	}
+	if account == nil {
+		c.JSON(http.StatusNotFound, domain.SimpleResponse{Status: "account not found"})
+
+		return
+	}
+
+	var req domain.PayRequest
+	err = c.ShouldBind(&req)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "wrong request params"})
+
+		return
+	}
+
+	account.Balance = req.PayAmount
+
+	err = usecase.UpdateAccountPay(ctrl.AccountRepository, account)
+	if err != nil {
+		log.Error(err)
+
+		if err.Error() == "Error 3819: Check constraint 'blocked_amount_zero' is violated." {
+			c.JSON(http.StatusConflict, domain.SimpleResponse{Status: "haven't money"})
+
+			return
+		}
+		c.JSON(http.StatusInternalServerError, domain.SimpleResponse{Status: "failed pay money"})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, domain.SimpleResponse{Status: "OK"})
 }
 
 func (ctrl Controller) accountDelete(c *gin.Context) {

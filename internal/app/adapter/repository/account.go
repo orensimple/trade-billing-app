@@ -42,6 +42,41 @@ func (u Account) Update(a *domain.Account) error {
 	return u.repo.Save(&a).Error
 }
 
+// UpdateAccountBlocked blocked money
+func (u Account) UpdateAccountBlocked(a *domain.Account) error {
+	sql := "update billing.accounts set blocked_amount = blocked_amount + ? where id = ?"
+
+	return u.repo.Exec(sql, a.BlockedAmount, a.ID).Error
+}
+
+// UpdateAccountPay pay money and unblock
+func (u Account) UpdateAccountPay(a *domain.Account) error {
+	tx := u.repo.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	sql := "update billing.accounts set blocked_amount = blocked_amount - ? where id = ?"
+	if err := tx.Exec(sql, a.Balance, a.ID).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	sql = "update billing.accounts set balance = balance - ? where id = ?"
+	if err := tx.Exec(sql, a.Balance, a.ID).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+}
+
 // Delete account by id
 func (u Account) Delete(f *domain.Account) error {
 	return u.repo.Delete(&f).Error

@@ -17,7 +17,7 @@ func main() {
 	viper.SetDefault("mysql_user", "root")
 	viper.SetDefault("mysql_password", "my-secret-pw")
 	viper.SetDefault("mysql_database", "billing")
-	viper.SetDefault("app_port", "80")
+	viper.SetDefault("app_port", "8081")
 	viper.SetDefault("app_domain", "localhost")
 
 	viper.SetConfigName("config")

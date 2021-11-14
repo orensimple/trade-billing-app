@@ -16,8 +16,12 @@ type Account struct {
 
 // BlockedRequest struct for blocked money.
 type BlockedRequest struct {
-	ID            uuid.UUID       `form:"id" json:"id" binding:"required"`
 	BlockedAmount decimal.Decimal `form:"blocked_amount" json:"blocked_amount" binding:"required"`
+}
+
+// PayRequest struct for pay money.
+type PayRequest struct {
+	PayAmount decimal.Decimal `form:"pay_amount" json:"pay_amount" binding:"required"`
 }
 
 // CreateRequest struct for create new account.
